@@ -12,8 +12,6 @@ public final class SpringKafkaProperties {
 
   public static final String KAFKA_SECURITY_PROTOCOL = "spring.kafka.security.protocol";
 
-  public static final String KAFKA_PRODUCER_COMPRESSION_TYPE = "spring.kafka.producer.compression-type";
-
   public static final String KAFKA_SSL_PROTOCOL = "spring.kafka.ssl.protocol";
 
   public static final String KAFKA_SSL_KEY_PASSWORD = "spring.kafka.ssl.key-password";
