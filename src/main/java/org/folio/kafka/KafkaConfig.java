@@ -35,6 +35,9 @@ public class KafkaConfig {
   public static final String KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS_CONFIG = "kafka.consumer.max.poll.interval.ms";
   public static final String KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS_CONFIG_DEFAULT = "300000";
 
+  public static final String KAFKA_PRODUCER_COMPRESSION_TYPE_CONFIG = "kafka.producer.compression.type";
+  public static final String KAFKA_PRODUCER_COMPRESSION_TYPE_CONFIG_DEFAULT = "gzip";
+
   public static final String KAFKA_SECURITY_PROTOCOL_CONFIG = "security.protocol";
   public static final String KAFKA_SECURITY_PROTOCOL_DEFAULT = "PLAINTEXT";
 
@@ -75,6 +78,9 @@ public class KafkaConfig {
     producerProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true");
     producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
     producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+    producerProps.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, SimpleConfigurationReader.getValue(
+      List.of(KAFKA_PRODUCER_COMPRESSION_TYPE_CONFIG, SpringKafkaProperties.KAFKA_PRODUCER_COMPRESSION_TYPE), KAFKA_PRODUCER_COMPRESSION_TYPE_CONFIG_DEFAULT));
+
     if (getMaxRequestSize() > 0) {
       producerProps.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG, String.valueOf(getMaxRequestSize()));
     }
