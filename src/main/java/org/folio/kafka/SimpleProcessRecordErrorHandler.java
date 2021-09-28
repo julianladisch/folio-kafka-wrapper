@@ -77,7 +77,7 @@ public class SimpleProcessRecordErrorHandler<K, V> implements ProcessRecordError
         if (war.succeeded()) {
           LOGGER.info("Event with type {} and correlationId {} was sent to kafka", eventType, correlationId);
         } else {
-          LOGGER.error("Sending event to Kafka failed", war.cause());
+          LOGGER.error("Sending event with event type {} to Kafka failed", eventType, war.cause());
         }
       });
     });
