@@ -63,6 +63,8 @@ public class SimpleProcessRecordErrorHandler<K, V> implements ProcessRecordError
     producerRecord.addHeaders(headers);
     producerRecord.addHeader(RESEND_COUNTER, String.valueOf(++resendCounter));
 
+    String correlationId = extractCorrelationId(headers);
+
     int delay = (int) Math.exp(++resendCounter) * delayQuantum;
     //It will be scheduled to run on the current context (verticle)
     vertx.setTimer(delay, id -> {
@@ -71,12 +73,22 @@ public class SimpleProcessRecordErrorHandler<K, V> implements ProcessRecordError
       }
       KafkaProducer<K, V> kafkaProducer = kafkaProducerManager.createShared(eventType);
       kafkaProducer.write(producerRecord, war -> {
-        if (war.failed()) {
-          LOGGER.error(war.cause());
-          kafkaProducer.close();
+        kafkaProducer.end(ear -> kafkaProducer.close());
+        if (war.succeeded()) {
+          LOGGER.info("Event with type {} and correlationId {} was sent to kafka", eventType, correlationId);
+        } else {
+          LOGGER.error("Sending event with event type {} to Kafka failed", eventType, war.cause());
         }
       });
     });
 
+  }
+
+  private String extractCorrelationId(List<KafkaHeader> kafkaHeaders) {
+    return kafkaHeaders.stream()
+      .filter(header -> header.key().equals("correlationId"))
+      .findFirst()
+      .map(header -> header.value().toString())
+      .orElse(null);
   }
 }
