@@ -71,9 +71,11 @@ public class SimpleProcessRecordErrorHandler<K, V> implements ProcessRecordError
       }
       KafkaProducer<K, V> kafkaProducer = kafkaProducerManager.createShared(eventType);
       kafkaProducer.write(producerRecord, war -> {
-        if (war.failed()) {
-          LOGGER.error(war.cause());
-          kafkaProducer.close();
+        kafkaProducer.end(ear -> kafkaProducer.close());
+        if (war.succeeded()) {
+          LOGGER.info("Event with type {} was sent to kafka", eventType);
+        } else {
+          LOGGER.error("Sending event to Kafka failed", war.cause());
         }
       });
     });
