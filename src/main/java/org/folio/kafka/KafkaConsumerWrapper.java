@@ -192,9 +192,13 @@ public class KafkaConsumerWrapper<K, V> implements Handler<KafkaConsumerRecord<K
         });
 
         if (har.failed()) {
-          LOGGER.error("Error while processing a record - id: {} subscriptionPattern: {}", id, subscriptionDefinition, har.cause());
+          LOGGER.error("Error while processing a record - id: {} subscriptionPattern: {} offset: {}", id, subscriptionDefinition, offset, har.cause());
           if (processRecordErrorHandler != null) {
+            LOGGER.info("Starting error handler to process failures for a record - id: {} subscriptionPattern: {} offset: {} and send DI_ERROR events",
+              id, subscriptionDefinition, offset);
             processRecordErrorHandler.handle(har.cause(), record);
+          } else {
+            LOGGER.warn("Error handler has not been implemented for subscriptionPattern: {} failures", subscriptionDefinition);
           }
         }
       } finally {
