@@ -1,3 +1,6 @@
+## 2021-12-15 v2.4.1
+* [KAFKAWRAP-14](https://issues.folio.org/browse/KAFKAWRAP-14) Fix log4j vulnerability
+
 ## 2021-09-29 v2.4.0
 * [KAFKAWRAP-2](https://issues.folio.org/browse/KAFKAWRAP-2) Take folio-kafka-wrapper lib out of mod-pubsub repository
 * [KAFKAWRAP-10](https://issues.folio.org/browse/KAFKAWRAP-10) Provide property to set compression type for producer configuration
