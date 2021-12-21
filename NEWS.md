@@ -1,3 +1,6 @@
+## 2021-12-21 v2.4.2
+* Update log4j to v2.17.0
+
 ## 2021-12-15 v2.4.1
 * [KAFKAWRAP-14](https://issues.folio.org/browse/KAFKAWRAP-14) Fix log4j vulnerability
 
