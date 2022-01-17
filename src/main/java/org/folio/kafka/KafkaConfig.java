@@ -1,6 +1,5 @@
 package org.folio.kafka;
 
-import io.kcache.KafkaCacheConfig;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -12,9 +11,6 @@ import org.apache.kafka.common.config.SslConfigs;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-
-import static io.kcache.KafkaCacheConfig.KAFKACACHE_TOPIC_REQUIRE_COMPACT_CONFIG;
 
 @Getter
 @Builder
@@ -62,9 +58,6 @@ public class KafkaConfig {
 
   public static final String KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG = "ssl.endpoint.identification.algorithm";
 
-  private static final String KAFKA_CACHE_TOPIC_PROPERTY = "kafkacache.topic";
-  private static final String KAFKA_CACHE_TOPIC_PROPERTY_DEFAULT = "events_cache";
-
   private final String kafkaHost;
   private final String kafkaPort;
   private final String okapiUrl;
@@ -105,14 +98,6 @@ public class KafkaConfig {
       List.of(KAFKA_CONSUMER_METADATA_MAX_AGE_CONFIG, SpringKafkaProperties.KAFKA_CONSUMER_METADATA_MAX_AGE), KAFKA_CONSUMER_METADATA_MAX_AGE_CONFIG_DEFAULT));
     ensureSecurityProps(consumerProps);
     return consumerProps;
-  }
-
-  public KafkaCacheConfig getCacheConfig() {
-    Properties props = new Properties();
-    props.put(KafkaCacheConfig.KAFKACACHE_BOOTSTRAP_SERVERS_CONFIG, "PLAINTEXT://" + getKafkaUrl()); //It should be as PLAINTEXT, as known issue in Kafka.
-    props.put(KAFKA_CACHE_TOPIC_PROPERTY, SimpleConfigurationReader.getValue(KAFKA_CACHE_TOPIC_PROPERTY, KAFKA_CACHE_TOPIC_PROPERTY_DEFAULT));
-    props.put(KAFKACACHE_TOPIC_REQUIRE_COMPACT_CONFIG, false);
-    return new KafkaCacheConfig(props);
   }
 
   public String getKafkaUrl() {
