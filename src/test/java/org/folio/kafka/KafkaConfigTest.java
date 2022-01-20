@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.util.Map;
 
+import static org.folio.kafka.KafkaConfig.KAFKA_NUMBER_OF_PARTITIONS;
 import static org.junit.Assert.*;
 
 public class KafkaConfigTest {
@@ -40,6 +41,17 @@ public class KafkaConfigTest {
       Assert.assertEquals(KafkaConfig.KAFKA_CONSUMER_METADATA_MAX_AGE_CONFIG_DEFAULT, consumerProps.get(ConsumerConfig.METADATA_MAX_AGE_CONFIG));
       Assert.assertEquals(KafkaConfig.KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS_CONFIG_DEFAULT, consumerProps.get(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG));
       Assert.assertEquals(maxPullRecordsValue, consumerProps.get(ConsumerConfig.MAX_POLL_RECORDS_CONFIG));
+    }
+
+    @Test
+    public void shouldReturnPartitionsNumberFromSystemProperties() {
+      System.setProperty(KAFKA_NUMBER_OF_PARTITIONS, "5");
+      KafkaConfig kafkaConfig = KafkaConfig.builder()
+        .kafkaHost("127.0.0.1")
+        .kafkaPort("9092")
+        .build();
+
+      Assert.assertEquals(5, kafkaConfig.getNumberOfPartitions());
     }
 
 }
