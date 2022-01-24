@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.kafka.exception.DuplicateEventException;
+
 import java.util.regex.Pattern;
 
 public class KafkaConsumerWrapper<K, V> implements Handler<KafkaConsumerRecord<K, V>> {
@@ -192,7 +194,11 @@ public class KafkaConsumerWrapper<K, V> implements Handler<KafkaConsumerRecord<K
         });
 
         if (har.failed()) {
-          LOGGER.error("Error while processing a record - id: {} subscriptionPattern: {} offset: {}", id, subscriptionDefinition, offset, har.cause());
+          if (har.cause() instanceof DuplicateEventException) {
+            LOGGER.info("Duplicate event for a record - id: {} subscriptionPattern: {} offset: {} has been skipped, logging more info about it in error handler", id, subscriptionDefinition, offset);
+          } else {
+            LOGGER.error("Error while processing a record - id: {} subscriptionPattern: {} offset: {}", id, subscriptionDefinition, offset, har.cause());
+          }
           if (processRecordErrorHandler != null) {
             LOGGER.info("Starting error handler to process failures for a record - id: {} subscriptionPattern: {} offset: {} and send DI_ERROR events",
               id, subscriptionDefinition, offset);
