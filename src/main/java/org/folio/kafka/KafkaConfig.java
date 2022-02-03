@@ -4,6 +4,7 @@ import io.kcache.KafkaCacheConfig;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -108,9 +109,14 @@ public class KafkaConfig {
   }
 
   public KafkaCacheConfig getCacheConfig() {
+    String topicName = SimpleConfigurationReader.getValue(KAFKA_CACHE_TOPIC_PROPERTY, KAFKA_CACHE_TOPIC_PROPERTY_DEFAULT);
+    if (StringUtils.isNotBlank(envId)) {
+      topicName = String.format("%s.%s", envId, topicName);
+    }
+
     Properties props = new Properties();
     props.put(KafkaCacheConfig.KAFKACACHE_BOOTSTRAP_SERVERS_CONFIG, "PLAINTEXT://" + getKafkaUrl()); //It should be as PLAINTEXT, as known issue in Kafka.
-    props.put(KAFKA_CACHE_TOPIC_PROPERTY, SimpleConfigurationReader.getValue(KAFKA_CACHE_TOPIC_PROPERTY, KAFKA_CACHE_TOPIC_PROPERTY_DEFAULT));
+    props.put(KAFKA_CACHE_TOPIC_PROPERTY, topicName);
     props.put(KAFKACACHE_TOPIC_REQUIRE_COMPACT_CONFIG, false);
     return new KafkaCacheConfig(props);
   }
