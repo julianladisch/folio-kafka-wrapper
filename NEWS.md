@@ -1,3 +1,6 @@
+## 2022-xx-xx v2.6.0-SNAPSHOT
+* [KAFKAWRAP-18](https://issues.folio.org/browse/KAFKAWRAP-18) Add implementation pause/resume methods to support DI flow control
+
 ## 2022-02-22 v2.5.0
 * [KAFKAWRAP-3](https://issues.folio.org/browse/KAFKAWRAP-3) Implement error handler contract for KafkaConsumerWrapper
 * [MODDATAIMP-623](https://issues.folio.org/browse/MODDATAIMP-623) Remove Kafka cache initialization and Maven dependency
