@@ -29,7 +29,7 @@ public class KafkaConsumerWrapper<K, V> implements Handler<KafkaConsumerRecord<K
 
   public static final int GLOBAL_SENSOR_NA = -1;
 
-  private final static AtomicInteger indexer = new AtomicInteger();
+  private static final AtomicInteger indexer = new AtomicInteger();
 
   private final int id = indexer.getAndIncrement();
 
@@ -130,6 +130,14 @@ public class KafkaConsumerWrapper<K, V> implements Handler<KafkaConsumerRecord<K
     return startPromise.future();
   }
 
+  public void pause() {
+    kafkaConsumer.pause();
+  }
+
+  public void resume() {
+    kafkaConsumer.resume();
+  }
+
   public Future<Void> stop() {
     Promise<Void> stopPromise = Promise.promise();
     kafkaConsumer.unsubscribe(uar -> {
@@ -162,7 +170,7 @@ public class KafkaConsumerWrapper<K, V> implements Handler<KafkaConsumerRecord<K
       int requestNo = pauseRequests.getAndIncrement();
       LOGGER.debug("Threshold is exceeded, preparing to pause, globalLoad: {}, currentLoad: {}, requestNo: {}", globalLoad, currentLoad, requestNo);
       if (requestNo == 0) {
-        kafkaConsumer.pause();
+        pause();
         LOGGER.info("Consumer - id: {} subscriptionPattern: {} kafkaConsumer.pause() requested" + " currentLoad: {}, loadLimit: {}", id, subscriptionDefinition, currentLoad, loadLimit);
       }
     }
@@ -216,10 +224,8 @@ public class KafkaConsumerWrapper<K, V> implements Handler<KafkaConsumerRecord<K
           int requestNo = pauseRequests.decrementAndGet();
           LOGGER.debug("Threshold is exceeded, preparing to resume, globalLoad: {}, currentLoad: {}, requestNo: {}", globalLoad, actualCurrentLoad, requestNo);
           if (requestNo == 0) {
-//           synchronized (this) { all this is handled within the same verticle
-            kafkaConsumer.resume();
+            resume();
             LOGGER.info("Consumer - id: {} subscriptionPattern: {} kafkaConsumer.resume() requested currentLoad: {} loadBottomGreenLine: {}", id, subscriptionDefinition, actualCurrentLoad, loadBottomGreenLine);
-//            }
           }
         }
       }
