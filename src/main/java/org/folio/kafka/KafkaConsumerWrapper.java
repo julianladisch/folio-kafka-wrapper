@@ -29,7 +29,7 @@ public class KafkaConsumerWrapper<K, V> implements Handler<KafkaConsumerRecord<K
 
   public static final int GLOBAL_SENSOR_NA = -1;
 
-  private final static AtomicInteger indexer = new AtomicInteger();
+  private static final AtomicInteger indexer = new AtomicInteger();
 
   private final int id = indexer.getAndIncrement();
 
@@ -224,10 +224,8 @@ public class KafkaConsumerWrapper<K, V> implements Handler<KafkaConsumerRecord<K
           int requestNo = pauseRequests.decrementAndGet();
           LOGGER.debug("Threshold is exceeded, preparing to resume, globalLoad: {}, currentLoad: {}, requestNo: {}", globalLoad, actualCurrentLoad, requestNo);
           if (requestNo == 0) {
-//           synchronized (this) { all this is handled within the same verticle
             resume();
             LOGGER.info("Consumer - id: {} subscriptionPattern: {} kafkaConsumer.resume() requested currentLoad: {} loadBottomGreenLine: {}", id, subscriptionDefinition, actualCurrentLoad, loadBottomGreenLine);
-//            }
           }
         }
       }
