@@ -130,12 +130,27 @@ public class KafkaConsumerWrapper<K, V> implements Handler<KafkaConsumerRecord<K
     return startPromise.future();
   }
 
+  /**
+   * Pauses kafka consumer.
+   */
   public void pause() {
     kafkaConsumer.pause();
   }
 
+  /**
+   * Resumes kafka consumer.
+   */
   public void resume() {
     kafkaConsumer.resume();
+  }
+
+  /**
+   * Gets usage demand to determine if consumer paused.
+   *
+   * @return 0 if consumer paused, otherwise any value greater than 0 would mean that consumer working.
+   */
+  public long demand() {
+    return kafkaConsumer.demand();
   }
 
   public Future<Void> stop() {
