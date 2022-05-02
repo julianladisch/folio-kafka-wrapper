@@ -131,6 +131,15 @@ public class KafkaConsumerWrapper<K, V> implements Handler<KafkaConsumerRecord<K
   }
 
   /**
+   * Gets consumer id.
+   *
+   * @return consumer id
+   */
+  public int getId() {
+    return id;
+  }
+
+  /**
    * Pauses kafka consumer.
    */
   public void pause() {
