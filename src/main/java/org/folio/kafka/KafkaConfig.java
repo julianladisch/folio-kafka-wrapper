@@ -29,7 +29,7 @@ public class KafkaConfig {
   public static final String KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG_DEFAULT = "100";
 
   public static final String KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS_CONFIG = "kafka.consumer.max.poll.interval.ms";
-  public static final String KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS_CONFIG_DEFAULT = "300000";
+  public static final String KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS_CONFIG_DEFAULT = "600000";
 
   public static final String KAFKA_PRODUCER_COMPRESSION_TYPE_CONFIG = "kafka.producer.compression.type";
   public static final String KAFKA_PRODUCER_COMPRESSION_TYPE_CONFIG_DEFAULT = "gzip";
