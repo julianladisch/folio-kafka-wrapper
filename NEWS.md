@@ -1,5 +1,6 @@
-## 2022-xx-xx v2.6.0-SNAPSHOT
+## 2022-05-23 v2.6.0
 * [KAFKAWRAP-18](https://issues.folio.org/browse/KAFKAWRAP-18) Add implementation pause/resume methods to support DI flow control
+* [KAFKAWRAP-22](https://issues.folio.org/browse/KAFKAWRAP-22) Upgrade vulns: log4j-core, jackson-databind, netty-codec-http
 
 ## 2022-02-22 v2.5.0
 * [KAFKAWRAP-3](https://issues.folio.org/browse/KAFKAWRAP-3) Implement error handler contract for KafkaConsumerWrapper
