@@ -13,8 +13,8 @@ import net.mguenther.kafka.junit.EmbeddedKafkaClusterConfig;
 import net.mguenther.kafka.junit.KeyValue;
 import net.mguenther.kafka.junit.SendKeyValues;
 import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
-
 import static java.lang.String.format;
 import static net.mguenther.kafka.junit.EmbeddedKafkaCluster.provisionWith;
 import static org.folio.kafka.KafkaConfig.KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG;
@@ -38,18 +36,20 @@ import static org.mockito.Mockito.verify;
 public class KafkaConsumerWrapperTest {
 
   private static final String EVENT_TYPE = "test_topic";
+  private static final String EVENT_TYPE2 = "test_topic2";
   private static final String KAFKA_ENV = "test-env";
   private static final String TENANT_ID = "diku";
   private static final String MODULE_NAME = "test_module";
 
-  @Rule
-  public EmbeddedKafkaCluster kafkaCluster = provisionWith(EmbeddedKafkaClusterConfig.useDefaults());
   private Vertx vertx = Vertx.vertx();
+  private EmbeddedKafkaCluster kafkaCluster;
   private KafkaConfig kafkaConfig;
   private KafkaAdminClient kafkaAdminClient;
 
   @Before
   public void setUp() {
+    kafkaCluster = provisionWith(EmbeddedKafkaClusterConfig.defaultClusterConfig());
+    kafkaCluster.start();
     String[] hostAndPort = kafkaCluster.getBrokerList().split(":");
     kafkaConfig = KafkaConfig.builder()
       .kafkaHost(hostAndPort[0])
@@ -57,6 +57,12 @@ public class KafkaConsumerWrapperTest {
       .build();
 
     kafkaAdminClient = KafkaAdminClient.create(vertx, Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfig.getKafkaUrl()));
+  }
+
+  @After
+  public void tearDown(TestContext testContext) {
+    kafkaAdminClient.close().onComplete(testContext.asyncAssertSuccess());
+    kafkaCluster.close();
   }
 
   @Test
@@ -164,10 +170,9 @@ public class KafkaConsumerWrapperTest {
   }
 
   @Test
-  public void shouldReturnSucceededFutureAndUnsubscribeWhenStopIsCalled(TestContext testContext) {
-    Async async = testContext.async();
-    SubscriptionDefinition subscriptionDefinition = KafkaTopicNameHelper.createSubscriptionDefinition(KAFKA_ENV, getDefaultNameSpace(), EVENT_TYPE);
-    String groupId = KafkaTopicNameHelper.formatGroupName(EVENT_TYPE, MODULE_NAME);
+  public void shouldReturnSucceededFutureAndUnsubscribeWhenStopIsCalled(TestContext testContext) throws Exception {
+    SubscriptionDefinition subscriptionDefinition = KafkaTopicNameHelper.createSubscriptionDefinition(KAFKA_ENV, getDefaultNameSpace(), EVENT_TYPE2);
+    String groupId = KafkaTopicNameHelper.formatGroupName(EVENT_TYPE2, MODULE_NAME);
 
     KafkaConsumerWrapper<String, String> kafkaConsumerWrapper = KafkaConsumerWrapper.<String, String>builder()
       .context(vertx.getOrCreateContext())
@@ -178,20 +183,12 @@ public class KafkaConsumerWrapperTest {
       .subscriptionDefinition(subscriptionDefinition)
       .build();
 
-    Future<Void> stopFuture = kafkaConsumerWrapper
-      .start(record -> Future.succeededFuture(), MODULE_NAME)
-      // wait for joining to group
-      .compose(v -> runWithDelay(1000, () -> kafkaAdminClient.describeConsumerGroups(List.of(groupId))))
-      .onComplete(ar -> testContext.assertTrue(ar.succeeded()))
-      .onSuccess(groups -> testContext.assertEquals(1, groups.get(groupId).getMembers().size()))
-      .compose(v -> kafkaConsumerWrapper.stop());
-
-    stopFuture.compose(v -> kafkaAdminClient.describeConsumerGroups(List.of(groupId)))
-      .onComplete(ar -> {
-        testContext.assertTrue(ar.succeeded());
-        testContext.assertEquals(0, ar.result().get(groupId).getMembers().size());
-        async.complete();
-      });
+    awaitMembersSize(groupId, 0)
+    .compose(v -> kafkaConsumerWrapper.start(record -> Future.succeededFuture(), MODULE_NAME))
+    .compose(v -> awaitMembersSize(groupId, 1))
+    .compose(v -> kafkaConsumerWrapper.stop())
+    .compose(v -> awaitMembersSize(groupId, 0))
+    .onComplete(testContext.asyncAssertSuccess());
   }
 
   @Test
@@ -234,10 +231,13 @@ public class KafkaConsumerWrapperTest {
     }
   }
 
-  private <T> Future<T> runWithDelay(long delay, Supplier<Future<T>> task) {
-    Promise<T> promise = Promise.promise();
-    vertx.setTimer(delay, id -> task.get().onComplete(promise));
-    return promise.future();
+  private Future<Void> awaitMembersSize(String groupId, int expectedSize) {
+    return kafkaAdminClient.describeConsumerGroups(List.of(groupId))
+        .compose(groups -> {
+          if (groups.get(groupId).getMembers().size() == expectedSize) {
+            return Future.succeededFuture();
+          }
+          return awaitMembersSize(groupId, expectedSize);
+        });
   }
-
 }
